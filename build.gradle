@@ -1,0 +1,27 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+repositories {
+	maven {
+		url "http://maven.teamdev.com/respository/products"
+	}
+	mavenCentral()
+}
+
+dependencies {
+	compile "com.teamdev.jxbrowser:jxbrowser-cross-platform:6.15"
+}
+
+jar {
+	from {
+		configurations.compile.collect {
+			it.isDirectory() ? it : zipTree(it)
+		}
+		configurations.runtime.collect {
+			it.isDirectory() ? it : zipTree(it)
+		}
+	}
+	manifest {
+		attributes 'Main-Class': 'com.midcoastmaineiacs.Steamworks.dashboard.Main'
+	}
+}
