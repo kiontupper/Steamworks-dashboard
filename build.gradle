@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-	compile "com.teamdev.jxbrowser:jxbrowser-cross-platform:6.15"
+	compile files("jxbrowser-6.15.jar", "jxbrowser-linux64-6.15.jar", "license.jar")
 }
 
 jar {

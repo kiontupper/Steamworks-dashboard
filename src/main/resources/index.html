@@ -1,0 +1,599 @@
+<!--suppress RequiredAttributes -->
+<html>
+<head>
+<script src="jquery-3.2.1.slim.min.js"></script>
+<title>Jeffrey</title>
+<style>
+*, ::before {
+	box-sizing: border-box;
+	font-size: 0;
+	font-weight: bold;
+	font-family: sans-serif;
+	cursor: default;
+	user-select: none;
+}
+
+body {
+	margin: 0px;
+	overflow: hidden;
+}
+
+.fade {
+	opacity: 0.75;
+	transition: opacity 5s ease 5s, filter 15s ease 10s, transform 20s ease 5s;
+	filter: grayscale(1);
+	transform-origin: 75vw calc(100vh - ((150vh - (150vw / 12 * 3)) / 4));
+	transform: scale(0.975);
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
+	box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.54);
+}
+
+body.connected .fade {
+	filter: initial;
+	transition: opacity 0.3s, filter 0.3s, transform 0.3s;
+	opacity: 1;
+	transform: initial;
+}
+
+h1 {
+	font-size: 48px;
+	margin: 0px;
+}
+
+pre {
+	font-size: initial;
+	font-family: monospace;
+	font-weight: initial;
+	user-select: initial;
+	cursor: text;
+}
+
+.debug {
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	margin: 10px calc(50vw / 3 - (50vw / 12 * 3) + 10px);
+	width: calc(100vw / 12 * 3 - 20px);
+	height: calc(100vw / 12 * 3 - 20px);
+	border-radius: 50%;
+	border-top-right-radius: calc(50vw / 12 * 3 - 10px);
+	box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.54);
+	transition: box-shadow 0.3s ease 0.3s, opacity 0.3s ease 0.3s, width 0.3s, height 0.3s, border-radius 0.3s, margin 0.3s;
+	overflow: hidden;
+	z-index: 2;
+	pointer-events: none;
+}
+
+.debug.open {
+	margin: 0px;
+	border-radius: 0;
+	pointer-events: initial;
+	width: 100vw;
+	height: 100vh;
+	box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.54);
+	transition: box-shadow 0.3s, opacity 0.3s, width 0.3s ease 0.3s, height 0.3s ease 0.3s, border-radius 0.3s ease 0.3s, margin 0.3s ease 0.3s;
+}
+
+.debug > div {
+	margin-left: calc(-100vw + (50vw / 3 - (50vw / 12 * 3) + 10px) + (100vw / 12 * 3 - 20px));
+	margin-right: calc(-50vw / 3 + (50vw / 12 * 3) - 10px);
+	margin-top: -10px;
+	height: 100vh;
+	width: 100vw;
+	background-color: red;
+	transition: margin 0.3s, opacity 0.3s ease 0.3s, background-color 0s ease 0.3s;
+	position: relative;
+	vertical-align: top;
+	padding: 16px;
+	opacity: 0;
+}
+
+.debug.open > div {
+	margin: 0px;
+	opacity: 2;
+	background-color: white;
+	transition: margin 0.3s ease 0.3s, opacity 0.3s, background-color 0s ease 0.3s;
+}
+
+.debug-close {
+	background-color: red !important;
+	color: white;
+	text-align: center !important;
+	line-height: calc(100vw / 12 * 3 - 20px);
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	font-size: xx-large;
+}
+
+.camera, .compass, .debug-close {
+	display: inline-block;
+	vertical-align: bottom;
+	text-align: center;
+}
+
+.camera {
+	opacity: 0;
+	transition: opacity 0.3s;
+	width: calc(100vw / 3);
+	height: calc(100vw / 12 * 3);
+	position: relative;
+	border: 0px;
+}
+
+.camera:after {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	height: 100%;
+	content: '';
+	display: block;
+}
+
+.camera-disconnected {
+	width: calc(200vw / 3);
+	height: calc(100vw / 12 * 3);
+	background-color: red;
+	color: white;
+	font-size: 48px;
+	line-height: calc(100vw / 12 * 3);
+	text-align: center;
+	margin-bottom: calc(-100vw / 12 * 3);
+}
+
+body.connected .camera {
+	opacity: 1;
+}
+
+.compass, .debug-close {
+	border-radius: 50%;
+	overflow: hidden;
+	background-color: lightgray;
+	width: calc(100vw / 12 * 3 - 20px);
+	height: calc(100vw / 12 * 3 - 20px);
+	margin: 10px calc(50vw / 3 - (50vw / 12 * 3) + 10px);
+}
+
+.compass-pointer {
+	height: calc(100vw / 24 * 3 - 5px);
+	width: 10px;
+	background-color: black;
+	background-clip: content-box;
+	display: inline-block;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	transform-origin: 5px calc(100vw / 24 * 3 - 10px);
+}
+
+.indicators {
+	height: calc(100vh - (100vw / 12 * 3));
+}
+
+.indicator-column {
+	display: inline-block;
+	height: inherit;
+	width: 50vw;
+	vertical-align: bottom;
+}
+
+.indicator-space {
+	height: calc((100vh - (100vw / 12 * 3)) / 4);
+}
+
+.indicator::before, .auto {
+	height: calc((100vh - (100vw / 12 * 3)) / 4);
+	line-height: calc((100vh - (100vw / 12 * 3)) / 4);
+	background-color: red;
+	color: white;
+	padding: 0px 32px;
+	font-size: x-large;
+	display: block;
+	content: '';
+}
+
+.indicator.orange::before, .auto.option.orange {
+	background-color: orange;
+}
+
+.indicator.on::before, .auto.option {
+	background-color: green;
+}
+
+.indicator.pi::before {
+	content: 'Pi is DEAD';
+}
+
+.indicator.pi.on::before {
+	content: 'Pi is ALIVE';
+}
+
+.indicator.vision::before {
+	content: 'No tape';
+}
+
+.indicator.vision.on::before {
+	content: 'Iz gud';
+}
+
+.indicator.competition::before {
+	content: 'Practice';
+}
+
+.indicator.competition.on::before {
+	content: 'Competition';
+}
+
+.indicator.power::before {
+	content: 'Half speed';
+}
+
+.indicator.power.on::before {
+	content: 'Full speed';
+}
+
+.indicator.enabled::before {
+	content: 'Robot disabled';
+}
+
+.indicator.enabled.on::before {
+	content: 'Robot enabled';
+}
+
+.indicator.connection::before {
+	content: 'NO CONNECTION';
+	position: absolute;
+	right: 0px;
+	bottom: calc((100vh - (100vw / 12 * 3)) / 4);
+	width: calc(50vw - 64px);
+	text-align: right;
+	pointer-events: none;
+	box-sizing: content-box;
+	z-index: 1;
+}
+
+body:not(.connected) .indicator.connection::before {
+	margin: 0px -5px -5px 0px;
+	padding: 5px 37px;
+	font-size: 34px;
+	transition: background-color 0.3s, font-size 20s ease 5s, padding 20s ease 5s, margin 20s ease 5s;
+}
+
+.indicator.connection.on::before {
+	content: 'Connected';
+}
+
+body.connected .indicator.connection::before {
+	transition: background-color 0.3s, font-size 0.3s, padding 0.3s, margin 0.3s;
+	margin: 0px;
+	padding: 0px 32px;
+}
+
+.connection-shadow {
+	box-shadow: 0px 8px 32px 8px rgba(0, 0, 0, 0.81);
+	transition: box-shadow 20s ease 5s, padding 20s ease 5s, margin-bottom 20s ease 5s;
+	position: absolute;
+	right: 0px;
+	bottom: calc((100vh - (100vw / 12 * 3)) / 4);
+	width: 50vw;
+	height: calc((100vh - (100vw / 12 * 3)) / 4);
+	pointer-events: none;
+	box-sizing: content-box;
+	padding: 5px 0px 5px 5px;
+	margin-bottom: -5px;
+	z-index: 4;
+}
+
+body.connected .connection-shadow {
+	box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.81);
+	transition: box-shadow 0.3s, padding 0.3s, margin-bottom 0.3s;
+	padding: 0px;
+	margin-bottom: 0px;
+}
+
+.pill {
+	height: calc((100vh - (100vw / 12 * 3)) / 4);
+	background-color: lightgray;
+}
+
+.pill.selected {
+	margin-top: calc((-100vh + (100vw / 12 * 3)) / 4);
+	overflow: hidden;
+	width: calc(50vw / 3);
+	color: white;
+	background-color: green;
+	position: relative;
+	transition: padding 0.3s, left 0.3s;
+	padding-top: 0px;
+}
+
+.pill-button {
+	font-weight: initial;
+	font-size: x-large;
+	line-height: calc((100vh - (100vw / 12 * 3)) / 4);
+	display: inline-block;
+	height: inherit;
+	width: calc(50vw / 3);
+	text-align: center;
+	position: relative;
+	left: 0vw;
+	vertical-align: bottom;
+}
+
+.pill.selected .pill-button {
+	margin-top: calc((-100vh + (100vw / 12 * 3)) / 4);
+	display: block;
+	font-weight: bold;
+	transition: left 0.3s;
+}
+
+.pill.selected .pill-button:first-child, .pill.selected.pill-button:last-child {
+	margin-left: calc(-100vw / 3);
+	margin-top: 0px;
+}
+
+.pill.selected .pill-button:nth-child(2) {
+	margin-left: calc(-50vw / 3);
+}
+
+.pill[data-selected='1'] .pill.selected {
+	padding-left: calc(50vw / 3);
+	left: 0vw;
+}
+
+.pill[data-selected='1'] .pill.selected .pill-button {
+	left: calc(50vw / 3);
+}
+
+.pill[data-selected='2'] .pill.selected {
+	padding-left: calc(50vw / 3);
+	left: calc(50vw / 3);
+}
+
+.pill[data-selected='3'] .pill.selected {
+	padding-left: 0px;
+	left: calc(100vw / 3);
+}
+
+.auto {
+	transition: margin-top 0.3s, height 0.3s, box-shadow 0.3s;
+	overflow: hidden;
+	position: relative; /* causes this to display on top of other elements */
+	z-index: 1;
+}
+
+.indicator-column > .auto {
+	padding: 0px;
+	box-shadow: 0px 0px 0px calc(100vw + 100vh) transparent;
+}
+
+.auto.open {
+	margin-top: calc((-100vh + (100vw / 12 * 3)) / 2);
+	height: calc((100vh - (100vw / 12 * 3)) / 4 * 3);
+	box-shadow: 0px 0px 0px calc(100vw + 100vh) white;
+}
+
+.auto:not(.open)[data-selected='1'] :first-child {
+	margin-top: 0px;
+}
+
+.auto:not(.open)[data-selected='2'] :first-child {
+	margin-top: calc((-100vh + (100vw / 12 * 3)) / 4);
+}
+
+.auto:not(.open)[data-selected='3'] :first-child {
+	margin-top: calc((-100vh + (100vw / 12 * 3)) / 2);
+}
+</style>
+<script>
+var connected = false;
+var table = {
+	pi: false,
+	vision: false,
+	competition: false,
+	power: true,
+	enabled: false,
+	pos: 2,
+	auto: "playdead",
+	drivetrain: "disabled",
+	heading: 180,
+	name: "Jeffrey"
+};
+var ws;
+const IP = "localhost";
+const FRONT_CAM_PORT = 1181;
+const BACK_CAM_PORT = 1182;
+
+function onopen(e) {
+	connected = true;
+	$("body").addClass("connected");
+	$(".camera.one").attr("src", "http://" + IP + ":" + BACK_CAM_PORT + "/?action=stream");
+	$(".camera.two").attr("src", "http://" + IP + ":" + FRONT_CAM_PORT + "/?action=stream");
+}
+
+function onclose(e) {
+	connected = false;
+	table.enabled = false;
+	setTimeout(connect, 1000);
+	$("body").removeClass("connected");
+	$(".camera").attr("src", "about:blank");
+}
+
+function onmessage(e) {
+	if (e.data.startsWith("sync:")) {
+		table = unserializeAll(e.data.substring(5));
+	} else if (e.data.startsWith("change:")) {
+		var i = e.data.indexOf(';');
+		if (i == -1) return;
+		var length = parseInt(e.data.substring(7, i));
+		var key = e.data.substring(i + 1, i + length + 1);
+		var value = e.data.substring(i + length + 1);
+		table[key] = unserialize(value);
+	} else if (e.data === "pull")
+		ws.send("sync:" + serializeAll(table));
+}
+
+function connect() {
+	ws = new WebSocket("ws://" + IP + ":5800");
+	ws.onclose = onclose;
+	ws.onopen = onopen;
+	ws.onmessage = onmessage;
+}
+
+function serialize(v) {
+	if (typeof v === "boolean")
+		return "B" + v;
+	else if (typeof v === "number")
+		return "D" + v;
+	else
+		return "S" + v;
+}
+
+function unserialize(s) {
+	if (s.startsWith("B"))
+		return s === "Btrue";
+	else if (s.startsWith("D"))
+		return parseFloat(s.substring(1));
+	else
+		return s.substring(1);
+}
+
+function serializeAll(v) {
+	var s = [];
+	for (var i in v) {
+		var j = serialize(v[i]);
+		s.push(i.length.toString());
+		s.push(";");
+		s.push(i.toString());
+		s.push(j.length.toString());
+		s.push(";");
+		s.push(j);
+	}
+	return s.join("");
+}
+
+function unserializeAll(s) {
+	var v = {};
+	var i = s.indexOf(';');
+	while (i != -1) {
+		var keyLength = parseInt(s.substring(0, i));
+		var key = s.substring(i + 1, i + keyLength + 1);
+		var i2 = s.indexOf(';', i + keyLength + 1);
+		var valLength = parseInt(s.substring(i + keyLength + 1, i2));
+		var val = s.substring(i2 + 1, i2 + valLength + 1);
+		v[key] = unserialize(val);
+		s = s.substring(i2 + valLength + 1);
+		i = s.indexOf(';');
+	}
+	return v;
+}
+
+function set(key, value) {
+	if (table[key] !== value) {
+		table[key] = value;
+		try {
+			ws.send("change:" + key.length + ";" + key + serialize(value));
+		} catch(e) {
+			console.log("Unable to send websocket message");
+		}
+	}
+}
+
+const toggles = ["pi", "vision", "competition", "power", "enabled"];
+
+function frame() {
+	for (var i in toggles) {
+		var j = toggles[i];
+		if (table[j])
+			$(".indicator." + j + ":not(.on)").addClass("on");
+		else
+			$(".indicator." + j + ".on").removeClass("on");
+	}
+	if (connected)
+		$(".indicator.connection:not(.on)").addClass("on");
+	else
+		$(".indicator.connection.on").removeClass("on");
+	$(".pill").first().attr("data-selected", table.pos);
+	switch(table.auto) {
+		case("playdead"):
+			$(".auto:not([data-selected='1'])").first().attr("data-selected", "1");
+			break;
+		case("mobility"):
+			$(".auto:not([data-selected='2'])").first().attr("data-selected", "2");
+			break;
+		case("gear"):
+			$(".auto:not([data-selected='3'])").first().attr("data-selected", "3");
+			break;
+	}
+	if ($(".debug").hasClass("open") && getSelection().toString() === "" && $("pre").attr("down") === "false") {
+		var keys = [];
+		for (var key in table) {
+			keys.push(key);
+		}
+		keys.sort();
+		var str = ["server:\t\t", IP, ":5800\n"];
+		for (var k in keys) {
+			var i = keys[k];
+			str.push("\n");
+			str.push(i);
+			str.push(i.length >= 7 ? ":\t" : ":\t\t");
+			str.push(table[i]);
+		}
+		$(".debug > div > pre").text(str.join(""));
+	}
+	$(".compass-pointer").css("transform", "rotate(" + table.heading + "deg)");
+	if ($("title").text() != table.name)
+		$("title").text(table.name);
+	requestAnimationFrame(frame);
+}
+</script>
+</head>
+<body class="connected" onload="$('body').removeClass('connected');connect();requestAnimationFrame(frame);">
+	<div class="indicator connection"></div>
+	<div class="fade">
+		<div class="debug"><div onmouseleave="$('pre').attr('down', false);" onmouseup="$('pre').attr('down', false);">
+			<div class="debug-close" onclick="$('.debug.open').removeClass('open');">Close</div>
+			<h1>Debug mode</h1>
+			<pre down="false" onmousedown="$(this).attr('down', true);"></pre>
+		</div></div>
+		<div class="camera-disconnected">No cameras</div>
+		<img class="camera one" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';">
+		<img class="camera two" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';">
+		<div class="compass" onclick="$('.debug').addClass('open');">
+			<div class="compass-pointer"></div>
+		</div>
+		<div class="indicators">
+			<div class="indicator-column">
+				<div class="indicator pi"></div>
+				<div class="indicator vision"></div>
+				<div class="indicator orange competition"></div>
+				<div class="pill" data-selected="2">
+					<div class="pill-button" onclick="set('pos', 1);">Left</div>
+					<div class="pill-button" onclick="set('pos', 2);">Center</div>
+					<div class="pill-button" onclick="set('pos', 3);">Right</div>
+					<div class="pill selected">
+						<div class="pill-button">Left</div>
+						<div class="pill-button">Center</div>
+						<div class="pill-button">Right</div>
+					</div>
+				</div>
+			</div>
+			<div class="indicator-column" style="text-align: right">
+				<div class="indicator orange power"></div>
+				<div class="indicator orange enabled"></div>
+				<div class="indicator-space"></div>
+				<div class="auto" data-selected="1">
+					<div class="auto orange option" onclick="set('auto', 'playdead');$('.auto').first().toggleClass('open');">Play dead</div>
+					<div class="auto option" onclick="set('auto', 'mobility');$('.auto').first().toggleClass('open');">Mobility</div>
+					<div class="auto option" onclick="set('auto', 'gear');$('.auto').first().toggleClass('open');">Gear</div>
+				</div>
+			</div>
+		</div>
+		<div class="compass">
+			<div class="compass-needle"></div>
+		</div>
+	</div>
+	<div class="connection-shadow"></div>
+</body>
