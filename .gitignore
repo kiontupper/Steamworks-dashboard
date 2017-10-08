@@ -6,4 +6,11 @@ fileTemplates/
 *.iws
 *.iml
 *~
+
+# These files will have to be downloaded for every new workspace
+jxbrowser-l*
+jxbrowser-m*
+jxbrowser-w*
+
+# No.
 license.jar
