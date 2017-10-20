@@ -1,9 +1,7 @@
-package com.midcoastmaineiacs.Steamworks.dashboard;
+package com.midcoastmaineiacs.mmdashboard;
 
 import com.teamdev.jxbrowser.chromium.Browser;
 import com.teamdev.jxbrowser.chromium.BrowserPreferences;
-import com.teamdev.jxbrowser.chromium.events.TitleEvent;
-import com.teamdev.jxbrowser.chromium.events.TitleListener;
 import com.teamdev.jxbrowser.chromium.javafx.BrowserView;
 import javafx.application.Application;
 import javafx.application.Platform;
