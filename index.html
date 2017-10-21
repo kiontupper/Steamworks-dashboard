@@ -5,13 +5,15 @@
 Loading...
 </title>
 <script type="text/javascript">
+// when calling "eval" indirectly, it works within the global scope, rather than locally
+var geval = eval;
 function redirect() {
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
 			var text = this.responseText.replace("<html>", "").replace("</html>", "").replace("<script src=\"jquery-", "<script src=\"");
 			document.getElementsByTagName("html")[0].innerHTML = text;
-			eval(text.substring(text.indexOf("<script>") + 8, text.indexOf("</script", text.indexOf("<script>"))));
+			geval(document.getElementsByTagName("script")[1].innerHTML);
 			requestAnimationFrame(function() {requestAnimationFrame(function() {eval($("body").attr("onload"));});});
 		}
 	};
