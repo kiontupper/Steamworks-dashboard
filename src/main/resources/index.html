@@ -151,9 +151,14 @@ pre {
 	background-color: red;
 	color: white;
 	font-size: 48px;
-	line-height: 100vh;
+	line-height: calc(100vh - 48px);
 	text-align: center;
 	margin-bottom: -100vh;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	content: '';
+	padding: 24px;
 }
 
 body.connected .camera {
@@ -193,11 +198,11 @@ body.connected .camera {
 	vertical-align: bottom;
 }
 
-.indicator-column {
-	display: inline-block;
-	height: inherit;
-	width: 50vw;
-	vertical-align: bottom;
+.static-indicators {
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+	background-color: lightgray;
 }
 
 .indicator {
@@ -210,6 +215,9 @@ body.connected .camera {
 	padding: 0px 32px;
 	font-size: x-large;
 	display: inline-block;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 	content: '';
 }
 
@@ -346,6 +354,10 @@ body.connected .connection-shadow {
 	position: relative; /* causes this to display on top of other elements */
 	z-index: 1;
 	display: block;
+}
+
+.auto[data-selected] {
+	padding: 0px;
 }
 
 .indicators > div > .auto {
@@ -590,13 +602,13 @@ function frame() {
 	$(".pill").first().attr("data-selected", table.pos);
 	switch(table.auto) {
 		case("playdead"):
-			$(".auto:not([data-selected='1'])").first().attr("data-selected", "1");
+			$(".auto[data-selected]:not([data-selected='1'])").first().attr("data-selected", "1");
 			break;
 		case("mobility"):
-			$(".auto:not([data-selected='2'])").first().attr("data-selected", "2");
+			$(".auto[data-selected]:not([data-selected='2'])").first().attr("data-selected", "2");
 			break;
 		case("gear"):
-			$(".auto:not([data-selected='3'])").first().attr("data-selected", "3");
+			$(".auto[data-selected]:not([data-selected='3'])").first().attr("data-selected", "3");
 			break;
 	}
 	if ($(".debug").hasClass("open")) {
@@ -726,25 +738,27 @@ function updateLayout() {
 			<div class="dynamic-indicators">
 				<div class="tile-before indicator vision"></div><div class="tile"></div><div class="tile-before indicator power on"></div><div class="tile"></div><div class="tile-before indicator competition"></div><div class="tile"></div><div class="tile field dt_state" style="background-color:lightgray;color:black;font-weight:normal;">Unknown drive train state</div><div class="tile-before indicator pi right"></div>
 			</div>
-			<div class="tile-before indicator enabled"></div>
-			<div class="tile"></div>
-			<div class="tile" style="display: inline-block; width: calc(50vw - (100vh / 3));">
-				<div class="tile pill" data-selected="2">
-					<div class="pill-button" onclick="set('pos', 1);">Left</div>
-					<div class="pill-button" onclick="set('pos', 2);">Center</div>
-					<div class="pill-button" onclick="set('pos', 3);">Right</div>
-					<div class="tile pill selected">
-						<div class="pill-button">Left</div>
-						<div class="pill-button">Center</div>
-						<div class="pill-button">Right</div>
+			<div class="static-indicators">
+				<div class="tile-before indicator enabled"></div>
+				<div class="tile"></div>
+				<div class="tile" style="display: inline-block; width: calc(50vw - (100vh / 3));">
+					<div class="tile pill" data-selected="2">
+						<div class="pill-button" onclick="set('pos', 1);">Left</div>
+						<div class="pill-button" onclick="set('pos', 2);">Center</div>
+						<div class="pill-button" onclick="set('pos', 3);">Right</div>
+						<div class="tile pill selected">
+							<div class="pill-button">Left</div>
+							<div class="pill-button">Center</div>
+							<div class="pill-button">Right</div>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="tile" style="display: inline-block; width: calc(50vw - (100vh / 3));">
-				<div class="auto" data-selected="1">
-					<div class="tile auto right option" onclick="set('auto', 'playdead');$('.auto').first().toggleClass('open');" style="background-color: orange">Play dead</div>
-					<div class="tile auto right option" onclick="set('auto', 'mobility');$('.auto').first().toggleClass('open');">Mobility</div>
-					<div class="tile auto right option" onclick="set('auto', 'gear');$('.auto').first().toggleClass('open');">Gear</div>
+				<div class="tile" style="display: inline-block; width: calc(50vw - (100vh / 3));">
+					<div class="auto" data-selected="1">
+						<div class="tile auto right option" onclick="set('auto', 'playdead');$('.auto').first().toggleClass('open');" style="background-color: orange">Play dead</div>
+						<div class="tile auto right option" onclick="set('auto', 'mobility');$('.auto').first().toggleClass('open');">Mobility</div>
+						<div class="tile auto right option" onclick="set('auto', 'gear');$('.auto').first().toggleClass('open');">Gear</div>
+					</div>
 				</div>
 			</div>
 		</div>
